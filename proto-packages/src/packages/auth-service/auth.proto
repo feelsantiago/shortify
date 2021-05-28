@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+    rpc Create (User) returns (User) {}
+    rpc Login (AuthRequest) returns (AuthResponse) {}
+    rpc Validate (TokenRequest) returns (User) {}
+}
+
+message User {
+	string _id = 1;
+    string name = 2;
+    string email = 3;
+    string password = 4;
+    string role = 5;
+    repeated string claims = 6;
+}
+
+message AuthRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message AuthResponse {
+    User user = 1;
+    string token = 2;
+    string auth_method = 3;
+}
+
+message TokenRequest {
+    string token = 1;
+}

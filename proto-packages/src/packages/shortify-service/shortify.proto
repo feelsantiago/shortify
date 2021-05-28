@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package shortify;
+
+service ShortifyService {
+    rpc Shortify (ShortifyRequest) returns (ShortifyResponse) {}
+    rpc Redirect (RedirectRequest) returns (RedirectResponse) {}
+}
+
+message ShortifyRequest {
+	string original_url = 1;
+	string channel = 2;
+	string asset = 3;
+	string campaign = 4;
+	string user_id = 5;
+	repeated Tag tags = 6;
+}
+
+message ShortifyResponse {
+    string url = 1;
+}
+
+message RedirectRequest {
+    string tac = 1;
+    ActivityDetail activity = 2;
+}
+
+message RedirectResponse {
+    string original_url = 1;
+}
+
+message LinkRequest {
+    string tac = 1;
+}
+
+message Link {
+    string tac = 1;
+    string original_url = 2;
+	int32 clicks = 3;
+	string asset = 4;
+	string channel = 5;
+	string campaing = 6;
+	string user_id = 7;
+	repeated ActivityDetail activities = 8;
+	repeated Tag tags = 9;
+}
+
+message Tag {
+	string key = 1;
+	string value = 2;
+}
+
+message ActivityDetail {
+    string host = 1;
+    string user_agent = 2;
+    string accept = 3;
+    string accept_language = 4;
+    string referer = 5;
+	string ip = 6;
+	string activity_track_id = 7;
+	string description = 8;
+}

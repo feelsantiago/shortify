@@ -1,0 +1,15 @@
+{
+    "name": "project-utils",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "docker-compose -f production.compose.yml build --no-cache",
+        "build:dev": "docker-compose -f development.compose.yml build --no-cache",
+        "start": "docker-compose -f production.compose.yml up",
+        "start:dev": "docker-compose -f development.compose.yml up"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

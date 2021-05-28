@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package client;
+
+service ClientService {
+	rpc Create (Client) returns (Client) {}
+	rpc ValidateSecret (ValidateSecretRequest) returns (ValidateSecretResponse) {}
+}
+
+message Client {
+	string _id = 1;
+	string name = 2;
+	Location location = 3;
+	string secret = 4;
+	string user_id = 5;
+}
+
+message Location {
+	string address = 1;
+	string city = 2;
+	string province = 3;
+	string country = 4;
+	string postal_code = 5;
+}
+
+message ValidateSecretRequest {
+	string secret = 1;
+}
+
+message ValidateSecretResponse {
+	bool result = 1;
+	Client client = 2;
+}

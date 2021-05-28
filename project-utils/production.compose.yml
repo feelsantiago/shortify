@@ -1,0 +1,136 @@
+version: '3.8'
+
+services:
+    rabbitmq:
+        image: rabbitmq:3-management-alpine
+        container_name: rabbitmq
+        tty: true
+        environment:
+            RABBITMQ_ERLANG_COOKIE: '${RABBITMQ_ERLANG_COOKIE}'
+            RABBITMQ_DEFAULT_USER: '${RABBITMQ_DEFAULT_USER}'
+            RABBITMQ_DEFAULT_PASS: '${RABBITMQ_DEFAULT_PASS}'
+            RABBITMQ_DEFAULT_VHOST: '${RABBITMQ_DEFAULT_VHOST}'
+        volumes:
+            - rabbitmqdata:/etc/rabbitmq/
+            - rabbitmqdata:/var/lib/rabbitmq/mnesia/
+            - rabbitmqdata:/var/log/rabbitmq/
+        ports:
+            - 5672:5672
+            - 15672:15672
+        networks:
+            - services
+    gateway:
+        build:
+            context: ../api-gateway
+            target: production
+        container_name: gateway
+        volumes:
+            - logdata:/usr/src/app/logs
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'node', 'dist/src/main.js']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${GATEWAY_PORT}:3000
+        networks:
+            - services
+    auth:
+        build:
+            context: ../auth-service
+            target: production
+        container_name: auth
+        volumes:
+            - logdata:/usr/src/app/logs
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'node', 'dist/src/main.js']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${AUTH_PORT}:5000
+        networks:
+            - services
+    client:
+        build:
+            context: ../client-service
+            target: production
+        container_name: client
+        volumes:
+            - logdata:/usr/src/app/logs
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'node', 'dist/src/main.js']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${CLIENT_PORT}:5001
+            - ${CLIENT_DEBUG_PORT}:9229
+        networks:
+            - services
+    logger:
+        build:
+            context: ../logger-service
+            target: production
+        container_name: logger
+        volumes:
+            - logdata:/usr/src/app/logs
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'node', 'dist/src/main.js']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        networks:
+            - services
+    report:
+        build:
+            context: ../report-service
+            target: production
+        container_name: report
+        volumes:
+            - logdata:/usr/src/app/logs
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'node', 'dist/src/main.js']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${REPORT_PORT}:3000
+        networks:
+            - services
+    shortify:
+        build:
+            context: ../shortify-service
+            target: production
+        container_name: shortify
+        volumes:
+            - logdata:/usr/src/app/logs
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'node', 'dist/src/main.js']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${SHORT_PORT}:5002
+        networks:
+            - services
+
+networks:
+    services:
+        driver: bridge
+
+volumes:
+    logdata:
+    rabbitmqdata:

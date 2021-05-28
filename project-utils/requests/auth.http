@@ -1,0 +1,27 @@
+@hostname = localhost
+@port = 3000
+@endpoint = auth
+@host = {{hostname}}:{{port}}/{{endpoint}}
+@content_type = application/json
+
+### Register new user
+
+POST http://{{host}}/register HTTP/1.1
+Content-Type: {{content_type}}
+
+{
+	"email": "filipe@teste.com",
+	"password": "123",
+	"name": "Filipe",
+	"role": "admin"
+}
+
+### Login user
+
+POST http://{{host}}/login HTTP/1.1
+Content-Type: {{content_type}}
+
+{
+	"email": "filipe@teste.com",
+	"password": "123"
+}

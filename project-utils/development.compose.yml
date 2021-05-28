@@ -1,0 +1,144 @@
+version: '3.8'
+
+services:
+    rabbitmq:
+        image: rabbitmq:3-management-alpine
+        container_name: rabbitmq
+        tty: true
+        volumes:
+            - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+            - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/mnesia/
+            - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+        environment:
+            RABBITMQ_ERLANG_COOKIE: '${RABBITMQ_ERLANG_COOKIE}'
+            RABBITMQ_DEFAULT_USER: '${RABBITMQ_DEFAULT_USER}'
+            RABBITMQ_DEFAULT_PASS: '${RABBITMQ_DEFAULT_PASS}'
+            RABBITMQ_DEFAULT_VHOST: '${RABBITMQ_DEFAULT_VHOST}'
+        ports:
+            - 5672:5672
+            - 15672:15672
+        networks:
+            - services
+    gateway:
+        build:
+            context: ../api-gateway
+            target: development
+        container_name: gateway
+        volumes:
+            - /usr/src/app/node_modules
+            - ../api-gateway:/usr/src/app
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'npm', 'run', 'start:dev']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${GATEWAY_PORT}:3000
+            - ${GATEWAY_DEBUG_PORT}:9229
+        networks:
+            - services
+    auth:
+        build:
+            context: ../auth-service
+            target: development
+        container_name: auth
+        volumes:
+            - /usr/src/app/node_modules
+            - ../auth-service:/usr/src/app
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'npm', 'run', 'start:dev']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${AUTH_PORT}:5000
+            - ${AUTH_DEBUG_PORT}:9229
+        networks:
+            - services
+    client:
+        build:
+            context: ../client-service
+            target: development
+        container_name: client
+        volumes:
+            - /usr/src/app/node_modules
+            - ../client-service:/usr/src/app
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'npm', 'run', 'start']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${CLIENT_PORT}:5001
+            - ${CLIENT_DEBUG_PORT}:9229
+        networks:
+            - services
+    logger:
+        build:
+            context: ../logger-service
+            target: development
+        container_name: logger
+        volumes:
+            - /usr/src/app/node_modules
+            - ../logger-service:/usr/src/app
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'npm', 'run', 'start']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${LOGGER_DEBUG_PORT}:9229
+        networks:
+            - services
+    report:
+        build:
+            context: ../report-service
+            target: development
+        container_name: report
+        volumes:
+            - /usr/src/app/node_modules
+            - ../report-service:/usr/src/app
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'npm', 'run', 'start']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${REPORT_PORT}:3000
+            - ${REPORT_DEBUG_PORT}:9229
+        networks:
+            - services
+    shortify:
+        build:
+            context: ../shortify-service
+            target: development
+        container_name: shortify
+        volumes:
+            - /usr/src/app/node_modules
+            - ../short-service:/usr/src/app
+        env_file:
+            - .env
+        command: ['./wait-for-it.sh', 'rabbitmq:5672', '-t', '120', '--', 'npm', 'run', 'start']
+        links:
+            - rabbitmq
+        depends_on:
+            - rabbitmq
+        ports:
+            - ${SHORT_PORT}:5002
+            - ${SHORT_DEBUG_PORT}:9229
+        networks:
+            - services
+
+networks:
+    services:
+        driver: bridge

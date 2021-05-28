@@ -1,0 +1,38 @@
+@hostname = localhost
+@port = 3000
+@endpoint = shortify
+@host = {{hostname}}:{{port}}/{{endpoint}}
+@content_type = application/json
+
+@auth_method = Bearer
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjdjYThkYjkwM2MwNzFhODg5OWU2YjYiLCJlbWFpbCI6ImZpbGlwZUB0ZXN0ZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE2MDI1OTQxNzd9.19eURCGz8xdmvSMKiRIluOjeIs3wbD4sSwo1-VkPsck
+@secret = 9c60778294edc8d738cf846118955eec2689b5008dfc1965adc5f789db82e9ee474017e7a508a49d527e6d99091c1d4c7972144a6f024aa4c55b65438019db15
+
+@tac = QeSbEfC0y
+
+
+### Shortify
+
+POST http://{{host}} HTTP/1.1
+Content-Type: {{content_type}}
+Authorization: {{auth_method}} {{token}}
+
+{
+	"original_url": "https://codepen.io/Merovinger/pen/gVaeLW",
+	"channel": "cookie test",
+	"asset": "post test",
+	"campaign": "test",
+	"tags": [{ "key": "IT", "value": "Tech" }, { "key": "IT", "value": "Tech2" }]
+}
+
+### Activity
+
+POST http://{{host}}/activity HTTP/1.1
+Content-Type: {{content_type}}
+Authorization: {{auth_method}} {{token}}
+
+{
+	"tac": "{{tac}}",
+	"description": "test activity",
+	"secret": "{{secret}}"
+}
